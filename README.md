@@ -7,5 +7,6 @@ Controls:
  - RIGHTARROW: skip ahead 5 seconds
  - UPARROW:    increase sensitivity to animation (for quieter songs/audio)
  - DOWNARROW:  decrease sensitivity
+ - TAB:        play next song
  - ESC:        exit
 

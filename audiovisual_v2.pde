@@ -1,43 +1,61 @@
+import java.util.Collections;
 import ddf.minim.*;
 import ddf.minim.analysis.*;
 
-Visualizer viz;
-
+Client client;
 Minim minim;
 
 float screenShake = 0;
 float screenRotate = 0;
-int idx = 0;
 
-void fileSelected(File selection) {
-  if (selection == null) {
-    exit();
-  } else {
-    viz = new Visualizer(selection.getPath());
+static final float sum(float... arr) {
+  float sum = 0;
+  for (float f: arr)  sum += f;
+  return sum;
+}
+
+void recurseDirMP3(ArrayList<String> a, String dir) {
+  File file = new File(dir);
+  if (file.isDirectory()) {
+    File[] subfiles = file.listFiles();
+    for (int i = 0; i < subfiles.length; i++) {
+      recurseDirMP3(a, subfiles[i].getAbsolutePath());
+    }
+  } else if (file.getAbsolutePath().indexOf(".mp3") != -1) {
+    a.add(file.getAbsolutePath());
   }
 }
 
+void folderSelected(File selection) {
+  if (selection == null) {
+    exit();
+  } else {
+    client.selectMusicFolder(selection);
+  }
+}
+
+
 void setup() {
   minim = new Minim(this);
+  client = new Client();
   
   fullScreen(P3D);
   
-  selectInput("Select song to visualize:", "fileSelected");
+  textFont(createFont("Arial", 12));
+  
+  selectFolder("Select song folder to visualize:", "folderSelected");
 }
 
 void draw() {
   background(0);
-  if (viz != null) {
+  if (client != null) {
     translate(width/2,height/2);
     rotate(screenRotate);
     translate(-width/2,-height/2);
     
     translate(random(-screenShake,screenShake),random(-screenShake,screenShake));
     
-    viz.step();
-    viz.display();
-    
-    idx += 1;
+    client.step();
   }
   if (frameRate < 50) {
     println(frameRate);
@@ -46,24 +64,9 @@ void draw() {
 }
 
 void keyPressed() {
-  if (key == CODED) {
-    if (keyCode == RIGHT) {
-      viz.song.skip(5000);
-    } else if (keyCode == UP) {
-      viz.loud += .1;
-    } else if (keyCode == DOWN) {
-      viz.loud -= .1;
-    }
+  if (client != null) {
+    client.keyPress();
   }
-}
-
-
-float sum(float[] arr) {
-  float s = 0;
-  for (int i=0; i<arr.length; i++) {
-    s += arr[i];
-  }
-  return s;
 }
 
 float angleBetween(float x1, float y1, float x2, float y2) {

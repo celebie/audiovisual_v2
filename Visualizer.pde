@@ -3,6 +3,7 @@ class Visualizer {
   ArrayList<ParticleArray> parrays;
   
   float loud = 1;
+  boolean done;
   
   AudioPlayer song;
   FFT fft;
@@ -19,23 +20,23 @@ class Visualizer {
     fft.linAverages(int(fft.specSize()/2));
     
     song.play();
-    
+    done = false;
   }
   
   void step() {
     fft.forward(song.mix);
     
     int fftLen = fft.avgSize();
-    float sum = 0;
+    float fftSum = 0;
     float[] avgs = new float[fftLen];
     for(int i = 0; i < fftLen; i++) {
       float a = fft.getAvg(i)*loud;
       avgs[i] = a;
-      sum += a;
+      fftSum += a;
     }
     
-    screenShake = sum/100;
-    screenRotate = pow(sum/4000,2);
+    screenShake = fftSum/100;
+    screenRotate = pow(fftSum/4000,2);
     
     int interval = floor(float(avgs.length)/3);
     float avg1 = sum(subset(avgs,0,interval))/interval;
@@ -43,13 +44,13 @@ class Visualizer {
     float avg3 = sum(subset(avgs,interval*2,interval))/interval;
     float maxavg = max(avg1,avg2,avg3);
     
-    float red = avg1*(255/(.01+maxavg*.2)) * (sum/1000);
-    float green = avg2*(255/(.01+maxavg*.2)) * (sum/1000);
-    float blue = avg3*(255/(.01+maxavg*.2)) * (sum/1000);
+    float red = avg1*(255/(.01+maxavg*.2)) * (fftSum/1000);
+    float green = avg2*(255/(.01+maxavg*.2)) * (fftSum/1000);
+    float blue = avg3*(255/(.01+maxavg*.2)) * (fftSum/1000);
     color fill = color(red,green,blue);
     
     for (ParticleArray pa: parrays) {
-      pa.forward(pow(sum/fftLen,1.5));
+      pa.forward(pow(fftSum/fftLen,1.5));
     }
     
     ParticleArray pa1 = parrays.get(0);
